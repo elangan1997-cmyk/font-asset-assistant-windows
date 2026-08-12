@@ -1,6 +1,6 @@
 # 字体与素材助手 Windows 版
 
-这是 Photoshop CEP 面板的 Windows 安装包。面板、JSX 和素材库逻辑与 macOS 版共用；Windows OCR 使用系统 Windows.Media.Ocr，通过 `extension/scripts/ocr.ps1` 调用。
+这是 Photoshop CEP 面板的 Windows 安装包。面板、JSX 和素材库逻辑与 macOS 版共用；Windows OCR 使用系统 Windows.Media.Ocr，通过 `extension/scripts/ocr.ps1` 调用。Windows 包不依赖 macOS Vision 或 Swift。
 
 ## 支持环境
 
