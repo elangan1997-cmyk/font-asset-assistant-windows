@@ -9,6 +9,17 @@ description: Use when rebuilding visible image text into editable Photoshop text
 
 将用户提供的 JPG、PNG 或扁平 PSD 中的画面文字重建为可编辑 Photoshop 文字层，同时保留原图、画布尺寸、分辨率和原始 PSD。以原装 Photoshop CEP 插件为执行引擎，由 Harness 自动编排 OCR、区域分类、擦除方式、PSD 生成、预览检查和迭代；不把 OCR 结果或 Agent 推断当作事实。
 
+## 必需依赖与平台
+
+本 Skill 不是独立 OCR 程序，必须依赖同仓库的 Photoshop CEP 插件 `extension/`：插件负责 Photoshop 内的 OCR、文字层创建、背景处理和 PSD 保存，Skill 负责参数编排、区域/包装判断、逐行策略、缓存和 QA。
+
+| 平台 | 插件 OCR | Skill Harness 自动编排 |
+|---|---|---|
+| macOS | `extension/scripts/ocr_macos`（Apple Vision） | 支持：`run_rebuild_harness.py` 通过 `osascript` 调用 Photoshop | 
+| Windows | `extension/scripts/ocr.ps1`（Windows.Media.Ocr） | 面板流程支持；当前 Python Harness 的 Photoshop 自动调用仍需在 macOS 执行，Windows 上按面板手动完成同一流程 |
+
+因此，Windows 用户必须先安装插件，再按“框选识别 → 排除包装文字 → 逐行设置 → 重建 → PSD QA”执行；不能只安装 Skill 就期待独立运行。
+
 ## Harness 执行入口
 
 优先运行 `scripts/run_rebuild_harness.py`，它会调用原插件的 `ocr_macos` 和 `jsx/host.jsx`，生成版本化 PSD、任务清单和 manifest。示例：

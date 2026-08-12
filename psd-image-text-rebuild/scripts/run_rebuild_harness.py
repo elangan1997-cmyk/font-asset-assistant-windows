@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Plugin-driven OCR -> layered PSD harness for macOS."""
+"""Plugin-driven OCR -> layered PSD harness.
+
+The Photoshop automation backend is currently macOS/AppleScript. On Windows,
+use the bundled CEP panel manually; the panel still uses Windows.Media.Ocr.
+"""
 from __future__ import annotations
 import argparse, hashlib, json, subprocess, tempfile
 from pathlib import Path

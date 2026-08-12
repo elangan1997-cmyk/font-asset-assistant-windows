@@ -184,6 +184,7 @@
     notes.appendChild(el("li", "", "已清理 " + report.cleanedRegions + " 处原文字区域"));
     if (report.contentAwareRegions) notes.appendChild(el("li", "", "所有文字区域合并后一次完成内容识别填充"));
     notes.appendChild(el("li", "", "原图保留在清理背景图层下方，可随时恢复"));
+    if (report.eraseModeUsed) notes.appendChild(el("li", "", "背景判断：" + (report.backgroundComplexity === "complex" ? "复杂背景，逐区域填充" : report.backgroundComplexity === "ordinary" ? "普通背景，合并填充" : report.eraseModeUsed)));
     if (report.failures.length) notes.appendChild(el("li", "", report.failures.length + " 项处理未完成"));
     target.appendChild(notes);
   }
@@ -290,6 +291,7 @@
       byId("excludeViewport").style.height = height + "px";
       drawExcludeRects();
     };
+    byId("pickerTitle");
     byId("excludePicker").querySelector("h2").textContent = state.excludeMode === "recognize" ? "框选需要识别的区域" : "框选忽略区域";
     byId("excludePicker").querySelector(".exclude-help").textContent = state.excludeMode === "recognize" ? "只扫描框选区域，可减少 OCR 计算量；可框选多个区域。" : "拖动框选产品包装区域；框内识别文字会被取消，不参与擦除和重建。";
     byId("applyExcludeRects").textContent = state.excludeMode === "recognize" ? "开始识别选中区域" : "应用忽略区域";
@@ -520,7 +522,9 @@
       lines: lines,
       targetFont: state.targetFont,
       eraseOriginal: byId("eraseOriginal").checked,
-      eraseMargin: 0.24,
+      // Narrow expansion for per-line complex-background cleanup; keep the
+      // wider margin only for merged fills on ordinary backgrounds.
+      eraseMargin: (byId("eraseMode").value || "merged") === "individual" ? 0.08 : 0.24,
       fontScale: Number(byId("fontScale").value || 1),
       textColor: byId("textColor").value || "#151515",
       eraseMode: byId("eraseMode").value || "merged"

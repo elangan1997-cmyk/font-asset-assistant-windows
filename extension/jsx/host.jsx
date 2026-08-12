@@ -498,10 +498,12 @@ var FontAssetAssistant = FontAssetAssistant || {};
         for (var index = 0; index < lines.length; index += 1) {
             var line = lines[index];
             if (line.enabled === false || !String(line.text || "").replace(/^\s+|\s+$/g, "")) continue;
-            var margin = Math.max(4, Number(line.height) * Number(eraseMargin || 0.24));
+            // Complex backgrounds need a narrow per-line mask. The old 24%
+            // expansion could swallow label borders and nearby artwork.
+            var margin = Math.max(2, Math.min(4, Number(line.height) * Number(eraseMargin || 0.08)));
             documentRef.selection.deselect();
             if (!api._selectTextRegion(documentRef, line, margin, SelectionType.REPLACE)) continue;
-            try { documentRef.selection.feather(UnitValue(1, "px")); } catch (featherError) {}
+            try { documentRef.selection.feather(UnitValue(0.5, "px")); } catch (featherError) {}
             var descriptor = new ActionDescriptor();
             descriptor.putEnumerated(c2t("Usng"), c2t("FlCn"), s2t("contentAware"));
             descriptor.putUnitDouble(c2t("Opct"), c2t("#Prc"), 100);
@@ -514,6 +516,28 @@ var FontAssetAssistant = FontAssetAssistant || {};
         return filledCount;
     };
 
+    // Automatic mode favors separate fills when OCR regions are numerous or
+    // spatially close, which is safer for textured/complex backgrounds. For a
+    // small number of well-separated lines, one merged fill is faster and
+    // usually produces a cleaner sample.
+    api._chooseEraseMode = function (documentRef, lines) {
+        var active = [];
+        for (var i = 0; i < lines.length; i += 1) {
+            if (lines[i].enabled !== false && String(lines[i].text || '').replace(/^\s+|\s+$/g, '')) active.push(lines[i]);
+        }
+        if (active.length >= 4) return 'individual';
+        for (var a = 0; a < active.length; a += 1) {
+            for (var b = a + 1; b < active.length; b += 1) {
+                var ax = Number(active[a].x), ay = Number(active[a].y), aw = Number(active[a].width), ah = Number(active[a].height);
+                var bx = Number(active[b].x), by = Number(active[b].y), bw = Number(active[b].width), bh = Number(active[b].height);
+                var gapX = Math.max(0, Math.max(ax, bx) - Math.min(ax + aw, bx + bw));
+                var gapY = Math.max(0, Math.max(ay, by) - Math.min(ay + ah, by + bh));
+                if (gapX < 24 && gapY < 48) return 'individual';
+            }
+        }
+        return 'merged';
+    };
+
     api._createOCRTextLayer = function (documentRef, group, line, payload, index) {
         var layer = documentRef.artLayers.add();
         layer.kind = LayerKind.TEXT;
@@ -524,14 +548,14 @@ var FontAssetAssistant = FontAssetAssistant || {};
         var targetFont = line.targetFont || payload.targetFont;
         if (!targetFont || !targetFont.postScriptName) throw new Error("这一行没有选择替换字体");
         textItem.font = targetFont.postScriptName;
-        var fontSizePixels = Math.max(8, Number(line.height) * Number(payload.fontScale || 1));
+        var fontSizePixels = Math.max(8, Number(line.height) * Number(line.fontScale || payload.fontScale || 1));
         textItem.size = UnitValue(fontSizePixels * 72 / documentRef.resolution, "pt");
         textItem.color = api._hexColor(line.textColor || line.color || payload.textColor);
         textItem.antiAliasMethod = AntiAlias.STRONG;
         textItem.justification = Justification.LEFT;
         textItem.position = [
             UnitValue(Number(line.x), "px"),
-            UnitValue(Number(line.y) + Number(line.height) * 0.88, "px")
+            UnitValue(Number(line.y) + Number(line.height) * Number(line.baseline || 0.78), "px")
         ];
         layer.move(group, ElementPlacement.INSIDE);
 
@@ -543,16 +567,36 @@ var FontAssetAssistant = FontAssetAssistant || {};
     api._rebuildOCRInternal = function () {
         var payload = api._pendingOCRRebuild;
         var documentRef = app.activeDocument;
-        var result = { ok: true, createdLayers: 0, cleanedRegions: 0, contentAwareRegions: 0, failures: [] };
+        var result = { ok: true, createdLayers: 0, cleanedRegions: 0, contentAwareRegions: 0, failures: [], eraseModeUsed: payload.eraseMode };
         var originalLayer = documentRef.activeLayer;
+
+        if (payload.eraseMode === 'auto') {
+            payload.eraseMode = api._chooseEraseMode(documentRef, payload.lines);
+            result.eraseModeUsed = payload.eraseMode;
+            result.backgroundComplexity = payload.eraseMode === 'individual' ? 'complex' : 'ordinary';
+        }
 
         if (payload.eraseOriginal) {
             try {
-                var cleanupLayer = originalLayer.duplicate();
-                cleanupLayer.name = "OCR 清理背景（原图保留在下方）";
-                cleanupLayer.visible = true;
-                documentRef.activeLayer = cleanupLayer;
-                result.cleanedRegions = payload.eraseMode === "individual" ? api._eraseTextRegionsIndividually(documentRef, payload.lines, payload.eraseMargin) : api._eraseAllTextRegions(documentRef, payload.lines, payload.eraseMargin);
+                var cleanupLayer;
+                if (payload.backgroundPath) {
+                    var backgroundFile = new File(payload.backgroundPath);
+                    if (!backgroundFile.exists) throw new Error("局部修复背景文件不存在");
+                    var placeDescriptor = new ActionDescriptor();
+                    placeDescriptor.putPath(c2t("null"), backgroundFile);
+                    placeDescriptor.putEnumerated(c2t("FTcs"), c2t("QCSt"), c2t("Qcsa"));
+                    executeAction(c2t("Plc "), placeDescriptor, DialogModes.NO);
+                    cleanupLayer = documentRef.activeLayer;
+                    cleanupLayer.name = "OCR 局部修复背景（原图保留在下方）";
+                    try { cleanupLayer.rasterize(RasterizeType.ENTIRELAYER); } catch (rasterizeError) {}
+                    result.cleanedRegions = payload.lines.length;
+                } else {
+                    cleanupLayer = originalLayer.duplicate();
+                    cleanupLayer.name = "OCR 清理背景（原图保留在下方）";
+                    cleanupLayer.visible = true;
+                    documentRef.activeLayer = cleanupLayer;
+                    result.cleanedRegions = payload.eraseMode === "individual" ? api._eraseTextRegionsIndividually(documentRef, payload.lines, payload.eraseMargin || 0.08) : api._eraseAllTextRegions(documentRef, payload.lines, payload.eraseMargin);
+                }
                 result.contentAwareRegions = result.cleanedRegions;
             } catch (duplicateError) {
                 result.failures.push({ index: -1, text: "", stage: "erase", message: duplicateError.message || "无法创建清理背景图层" });
