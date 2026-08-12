@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>字体与素材助手</title>
+    <link rel="stylesheet" href="./css/panel.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div class="header-row">
+          <div class="brand-mark" aria-hidden="true"><span>字</span><span>材</span></div>
+          <div class="header-copy">
+            <h1>字体与素材助手</h1>
+            <p id="documentStatus">正在连接 Photoshop 2020…</p>
+          </div>
+          <button id="refreshButton" class="icon-button" type="button" title="刷新">↻</button>
+        </div>
+        <div id="taskRail" class="task-rail" data-state="idle"><span></span></div>
+      </header>
+
+      <nav class="tabs" aria-label="功能">
+        <button class="tab is-active" type="button" data-tab="fonts">
+          <span>图片文字</span><b id="ocrCount">—</b>
+        </button>
+        <button class="tab" type="button" data-tab="assets">
+          <span>素材库</span><b id="assetCount">—</b>
+        </button>
+      </nav>
+
+      <section id="fontPanel" class="panel">
+        <div class="section-head">
+          <div><small>当前画布</small><h2>识别并重建文字</h2></div>
+          <div class="scan-actions"><button id="directScanButton" class="button secondary" type="button">直接识别</button><button id="scanButton" class="button secondary" type="button">框选后识别</button></div>
+        </div>
+        <div id="ocrSummary" class="summary">打开 JPG、PNG 或扁平 PSD 后点击“识别图片”</div>
+        <div id="ocrList" class="ocr-list"></div>
+        <div id="ocrEmpty" class="empty">
+          <div class="empty-icon">Aa</div>
+          <h3>从图片中提取文字</h3>
+          <p>自动识别文字内容和位置；识别后可逐行校对。</p>
+        </div>
+        <div id="ocrSettings" class="ocr-settings is-hidden">
+          <div class="setting-row">
+            <label>统一字体</label>
+            <button id="selectOcrFont" class="target-button" type="button">选择新字体</button>
+          </div>
+          <div class="setting-grid">
+            <label class="color-setting"><span>文字颜色</span><i id="textColorPreview"></i><input id="textColor" type="text" value="#151515" maxlength="7" spellcheck="false" /></label>
+            <label><span>字号比例</span><select id="fontScale"><option value="0.9">偏小</option><option value="1" selected>自动</option><option value="1.12">偏大</option></select></label>
+          </div>
+          <div class="color-actions"><button id="useForegroundColor" class="button quiet" type="button">读取 Photoshop 前景色</button><span>例如 #1A1A1A</span></div>
+          <div class="erase-mode-row"><label for="eraseMode">擦除方式</label><select id="eraseMode"><option value="merged">一次合并填充（普通背景）</option><option value="individual">逐区域填充（复杂背景）</option></select></div>
+          <div class="ocr-exclude-actions"><button id="excludeRegionButton" class="button quiet" type="button">框选忽略区域</button><span>包装袋、包装盒上的文字可整块排除</span></div>
+          <div class="layout-note"><strong>保持原图分行</strong><span>原图一行对应一个文字图层，不自动增加换行</span></div>
+          <label class="check-row"><input id="eraseOriginal" type="checkbox" checked /><span><strong>自动擦除原字</strong><small>用内容识别填充清理原字，原图始终保留在下方</small></span></label>
+        </div>
+        <div id="replaceReport" class="notice is-hidden"></div>
+        <footer class="action-bar">
+          <div class="action-copy"><strong id="mappingTitle">尚未识别文字</strong><span id="mappingMeta">识别后选择字体并生成文字层</span></div>
+          <button id="replaceButton" class="button primary" type="button" disabled>擦除并重建</button>
+        </footer>
+      </section>
+
+      <section id="assetPanel" class="panel is-hidden">
+        <div class="section-head">
+          <div><small>本地文件夹</small><h2>素材工作台</h2></div>
+          <button id="chooseFolderButton" class="button secondary" type="button">选择目录</button>
+        </div>
+        <div id="rootBar" class="root-bar is-hidden">
+          <i></i><div><strong id="rootName"></strong><span id="rootMeta"></span></div>
+          <button id="refreshAssetsButton" class="icon-button" type="button">↻</button>
+        </div>
+        <div id="assetTools" class="asset-tools is-hidden">
+          <label class="search"><span>⌕</span><input id="assetSearch" type="search" placeholder="按文件名搜索" /></label>
+          <select id="categorySelect" aria-label="素材分类"></select>
+        </div>
+        <div id="assetGrid" class="asset-grid"></div>
+        <div id="assetEmpty" class="empty">
+          <div class="empty-icon diamond">◇</div>
+          <h3>连接素材目录</h3>
+          <p>子文件夹自动成为分类，支持 PNG、JPG、JPEG 和 SVG。</p>
+          <button id="emptyChooseButton" class="button primary" type="button">选择素材目录</button>
+        </div>
+        <div id="assetNotice" class="notice is-hidden"></div>
+        <footer class="action-bar">
+          <div class="action-copy"><strong id="selectedName">未选择素材</strong><span id="selectedMeta">单击选择，双击直接置入</span></div>
+          <button id="placeButton" class="button primary" type="button" disabled>置入画布</button>
+        </footer>
+      </section>
+
+      <div id="toast" class="toast" role="status"></div>
+
+      <div id="fontPicker" class="overlay is-hidden" role="dialog" aria-modal="true">
+        <div class="picker">
+          <header><div><small>重建文字</small><h2 id="pickerTitle">选择新字体</h2></div><button id="closePicker" class="icon-button" type="button">×</button></header>
+          <label class="search picker-search"><span>⌕</span><input id="fontSearch" type="search" placeholder="搜索字体、字重或 PostScript 名" /></label>
+          <div id="fontOptions" class="font-options"></div>
+          <footer><span id="fontOptionMeta"></span><button id="clearMapping" class="button quiet" type="button">取消选择</button></footer>
+        </div>
+      </div>
+      <div id="excludePicker" class="overlay is-hidden" role="dialog" aria-modal="true">
+        <div class="exclude-picker">
+          <header><div><small>OCR 筛选</small><h2>框选忽略区域</h2></div><button id="closeExcludePicker" class="icon-button" type="button">×</button></header>
+          <p class="exclude-help">拖动框选产品包装区域；框内识别文字会被取消，不参与擦除和重建。</p>
+          <div id="excludeViewport" class="exclude-viewport"><img id="excludeImage" alt="当前画布预览" /><canvas id="excludeCanvas"></canvas></div>
+          <footer class="exclude-footer"><button id="clearExcludeRects" class="button quiet" type="button">清除框选</button><button id="applyExcludeRects" class="button primary" type="button">应用忽略区域</button></footer>
+        </div>
+      </div>
+    </main>
+    <script src="./js/panel.js"></script>
+  </body>
+</html>
