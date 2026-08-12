@@ -1,4 +1,4 @@
 interface:
-  display_name: "PSD 图片文字重建"
+  display_name: "psd-image-text-rebuild"
   short_description: "迭代式识别、分类、重建图片文字并保存分层 PSD 文件"
   default_prompt: "Use $psd-image-text-rebuild to rebuild image text into an editable, versioned PSD with Agent review."

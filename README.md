@@ -1,4 +1,4 @@
-# 字体与素材助手 + `psd-image-text-rebuild` Skill
+# `psd-image-text-rebuild` Skill + Photoshop CEP 插件
 
 这是一个同时支持 macOS 和 Windows 的“Skill + Photoshop CEP 插件”完整工作流，不是只提供一个独立脚本：
 
