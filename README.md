@@ -19,7 +19,7 @@ Skill 依赖同仓库的 `extension/` 插件。插件负责真正操作 Photosho
 - `install.cmd`、`install.ps1`：Windows 插件安装器
 - `install-mac.command`：macOS 插件安装器（编译 Apple Vision OCR）
 - `install-skill.command`、`install-skill.ps1`：两平台 Skill 安装器
-- `examples/T01_低机位斜切_内置模型.png`：测试图
+- `examples/T01_分层结果示例.png`：T01 已分层结果示例
 - `README-Windows.md`：Windows 安装补充说明
 
 ## 一、先安装 Photoshop 插件
@@ -152,13 +152,13 @@ python3 psd-image-text-rebuild/scripts/run_rebuild_harness.py \
 
 ## 五、T01 测试示例
 
-测试图：`examples/T01_低机位斜切_内置模型.png`
+分层结果示例：`examples/T01_分层结果示例.png`
 
 ![T01 测试图](examples/T01_%E4%BD%8E%E6%9C%BA%E4%BD%8D%E6%96%9C%E5%88%87_%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9E%8B.png)
 
 建议框选：`x=40, y=35, width=800, height=530`，包含上半部标题、说明和图标说明，避开下方滤材主体。
 
-预期：标题和说明文字生成独立文字层；产品主体不被误擦；颜色大致保持深蓝、黑色、青绿色；PSD 可继续编辑。
+结果示例：右侧 Photoshop 图层面板显示 `OCR 可编辑文字` 组，标题、说明和图标文字分别成为独立文字层；下方保留 `OCR 局部修复背景` 和原始 `背景` 层。产品主体没有被误擦，PSD 可继续编辑。
 
 ## 六、验收与限制
 
