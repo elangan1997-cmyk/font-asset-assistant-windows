@@ -144,6 +144,8 @@ button:disabled { cursor: default; opacity: .42; }
 .root-bar > div { min-width: 0; flex: 1; }
 .root-bar strong, .root-bar span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .root-bar span { color: var(--muted); font-size: 9px; }
+.root-actions { display: flex; gap: 6px; align-items: center; }
+.icon-button.danger { color: #ff9a9a; }
 .asset-tools { display: flex; margin-top: 9px; }
 .search { display: flex; min-width: 0; flex: 1; align-items: center; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
 .search:focus-within { border-color: var(--accent); }

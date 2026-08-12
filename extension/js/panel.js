@@ -669,6 +669,32 @@
     }).then(function () { setBusy(false); });
   }
 
+  function deleteCurrentFolder() {
+    if (!state.rootPath || !fs || !nodePath) return;
+    var folder = state.rootPath;
+    var name = nodePath.basename(folder);
+    if (!window.confirm("确定删除素材文件夹“" + name + "”及其中全部文件吗？\n此操作不可撤销。")) return;
+    setBusy(true, "working");
+    try {
+      function removeTree(target) {
+        var entries = fs.readdirSync(target);
+        for (var index = 0; index < entries.length; index += 1) {
+          var child = nodePath.join(target, entries[index]);
+          var stat = fs.lstatSync(child);
+          if (stat.isDirectory() && !stat.isSymbolicLink()) removeTree(child);
+          else fs.unlinkSync(child);
+        }
+        fs.rmdirSync(target);
+      }
+      removeTree(folder);
+      localStorage.removeItem(ROOT_KEY);
+      state.rootPath = ""; state.assets = []; state.categories = []; state.selectedAssetId = ""; state.category = "全部";
+      renderAssets();
+      toast("素材文件夹已删除", "success");
+    } catch (error) { toast(errorText(error, "删除素材文件夹失败"), "error"); }
+    finally { setBusy(false); }
+  }
+
   function filteredAssets() {
     var query = state.search.toLowerCase();
     var result = [];
@@ -857,6 +883,7 @@
     byId("chooseFolderButton").addEventListener("click", chooseFolder);
     byId("emptyChooseButton").addEventListener("click", chooseFolder);
     byId("refreshAssetsButton").addEventListener("click", function () { loadAssets(true); });
+    byId("deleteFolderButton").addEventListener("click", deleteCurrentFolder);
     byId("assetSearch").addEventListener("input", function () { state.search = this.value || ""; renderAssets(); });
     byId("categorySelect").addEventListener("change", function () { state.category = this.value || "全部"; renderAssets(); });
     byId("placeButton").addEventListener("click", placeAsset);
