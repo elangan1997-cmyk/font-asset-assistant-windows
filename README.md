@@ -154,7 +154,7 @@ python3 psd-image-text-rebuild/scripts/run_rebuild_harness.py \
 
 分层结果示例：`examples/T01_分层结果示例.png`
 
-![T01 测试图](examples/T01_%E4%BD%8E%E6%9C%BA%E4%BD%8D%E6%96%9C%E5%88%87_%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9E%8B.png)
+![T01 已分层结果示例](examples/T01_%E5%88%86%E5%B1%82%E7%BB%93%E6%9E%9C%E7%A4%BA%E4%BE%8B.png)
 
 建议框选：`x=40, y=35, width=800, height=530`，包含上半部标题、说明和图标说明，避开下方滤材主体。
 
