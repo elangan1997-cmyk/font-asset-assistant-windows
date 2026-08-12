@@ -1,6 +1,6 @@
 # 字体与素材助手 + `psd-image-text-rebuild` Skill
 
-这是一个“Skill + Photoshop CEP 插件”的完整工作流，不是只提供一个独立脚本：
+这是一个同时支持 macOS 和 Windows 的“Skill + Photoshop CEP 插件”完整工作流，不是只提供一个独立脚本：
 
 ```text
 psd-image-text-rebuild Skill
@@ -16,7 +16,9 @@ Skill 依赖同仓库的 `extension/` 插件。插件负责真正操作 Photosho
 
 - `psd-image-text-rebuild/`：主 Skill（必需）
 - `extension/`：Photoshop CEP 插件（Skill 的执行引擎）
-- `install.cmd`、`install.ps1`：Windows 安装器
+- `install.cmd`、`install.ps1`：Windows 插件安装器
+- `install-mac.command`：macOS 插件安装器（编译 Apple Vision OCR）
+- `install-skill.command`、`install-skill.ps1`：两平台 Skill 安装器
 - `examples/T01_低机位斜切_内置模型.png`：测试图
 - `README-Windows.md`：Windows 安装补充说明
 
@@ -35,13 +37,20 @@ Windows OCR 使用 `extension/scripts/ocr.ps1` 调用 `Windows.Media.Ocr`，需�
 
 ### macOS
 
-本仓库的 `extension/` 与原 macOS 插件结构兼容。复制到：
+直接双击或在终端运行仓库中的 `install-mac.command`：
+
+```bash
+chmod +x install-mac.command
+./install-mac.command
+```
+
+安装器会先用 Xcode Command Line Tools 的 `swiftc` 编译 Apple Vision OCR，再把插件复制到：
 
 ```text
 ~/Library/Application Support/Adobe/CEP/extensions/com.liz.fontassetassistant.cep
 ```
 
-macOS OCR 使用 `extension/scripts/ocr_macos`（Apple Vision）。若使用原始 Mac 安装包，运行其 `install.command` 即可。
+macOS OCR 使用 `extension/scripts/ocr_macos`（Apple Vision）。也可以使用原始 Mac 安装包中的 `install.command`，但推荐使用本仓库脚本，以确保插件版本与 Skill 一致。
 
 ## 二、Skill 安装
 
