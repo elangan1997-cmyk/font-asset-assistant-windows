@@ -154,6 +154,8 @@ python3 psd-image-text-rebuild/scripts/run_rebuild_harness.py \
 
 测试图：`examples/T01_低机位斜切_内置模型.png`
 
+![T01 测试图](examples/T01_%E4%BD%8E%E6%9C%BA%E4%BD%8D%E6%96%9C%E5%88%87_%E5%86%85%E7%BD%AE%E6%A8%A1%E5%9E%8B.png)
+
 建议框选：`x=40, y=35, width=800, height=530`，包含上半部标题、说明和图标说明，避开下方滤材主体。
 
 预期：标题和说明文字生成独立文字层；产品主体不被误擦；颜色大致保持深蓝、黑色、青绿色；PSD 可继续编辑。
